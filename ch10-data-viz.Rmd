@@ -1,0 +1,169 @@
+---
+title: "ch10-Data-Viz-R"
+author: "jenngeorgevich"
+date: "9/17/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library('ggplot2')
+```
+## Scatter Plots 
+- 
+
+```{r faithful}
+plot(faithful$waiting,
+faithful$eruptions,
+xlab = "waiting time (min)",
+ylab = "eruption time (min)")
+```
+
+- args pch, col, cex modify shape, color, size 
+
+```{r faithful}
+plot(faithful$waiting,
+faithful$eruptions,
+pch = 17,
+col = 2,
+cex = 1.2,
+xlab = "waiting times (min)",
+ylab = "eruption time (min)")
+```
+ - distinguish between different values with different symbols like 'pch = mtcars$am'
+ 
+ - qplot version: 
+ 
+```{r faithful} 
+qplot(x = waiting,
+y = eruptions,
+data = faithful,
+main = "Waiting times (sec) vs. eruptions (min)")
+```
+
+- 'size' determines the size of each marker 
+
+```{r mtcars}
+qplot(x = wt,
+y = mpg,
+data = mtcars,
+size = cyl,
+main = "MPG vs. weight (x1000 lbs) by cylinder")
+```
+
+### Adding a smooth, curved line
+- use a kernel function to get the weighted avg of the original data 
+- modify the 'span' argument (similar to 'adjust' for smoothed histograms) to adjust 'h'
+
+```{r mtcars}
+qplot(disp,
+mpg,
+data = mtcars,
+main = "MPG vs Eng. Displacement") +
+stat_smooth(method = "loess",
+method.args = list(degree = 0),
+span = 0.2,
+se = FALSE)
+```
+- the above plot's `span' is less than the below plot's. increasing span results in a less wiggly curve
+
+```{r mtcars}
+qplot(disp,
+mpg,
+data = mtcars,
+main = "MPG vs Eng. Displacement") +
+stat_smooth(method = "loess",
+method.args = list(degree = 0),
+span = 1,
+se = FALSE)
+```
+
+### using qplots 'facets' to compare multiple graphs 
+  - for side-by-side panels, use `facet = .~amf`
+```{r mtcars}
+# add new dataframe columns with more appropriate names for
+# better axes labeling in future graphs
+mtcars$amf[mtcars$am==0] = 'automatic'
+mtcars$amf[mtcars$am==1] = 'manual'
+mtcars$vsf[mtcars$vs==0] = 'flat'
+mtcars$vsf[mtcars$vs==1] = 'V-shape'
+qplot(x = wt,
+y = mpg,
+facets = .~amf,
+data = mtcars,
+main = "MPG vs. weight by transmission")
+```
+- for graphs stacked on top of each other, use `facet = vsf~.`
+```{r mtcars}
+mtcars$amf[mtcars$am==0] = 'automatic'
+mtcars$amf[mtcars$am==1] = 'manual'
+mtcars$vsf[mtcars$vs==0] = 'flat'
+mtcars$vsf[mtcars$vs==1] = 'V-shape'
+qplot(x = wt,
+y = mpg,
+facets = vsf~.,
+data = mtcars,
+main = "MPG vs. weight by engine") +
+stat_smooth(se = FALSE)
+```
+- multi-row and multi-colum: `facets = vsf~amf`
+```{r mtcars}
+mtcars$amf[mtcars$am==0] = 'automatic'
+mtcars$amf[mtcars$am==1] = 'manual'
+mtcars$vsf[mtcars$vs==0] = 'flat'
+mtcars$vsf[mtcars$vs==1] = 'V-shape'
+qplot(x = wt,
+y = mpg,
+data = mtcars,
+facets = vsf~amf,
+main = "MPG vs. weight by transmission and engine")
+```
+
+### using plot or ggpairs to compare multiple graphs 
+- `plot` receives an entire df as an argument 
+
+```{r mtcars}
+# create a new dataframe with three columns: cty, hwy, and disp
+DF = mpg[, c("cty", "hwy", "displ")]
+plot(DF, main = "City MPG vs. Highway MPG vs. Engine Volume")
+```
+
+```{r mtcars}
+library(GGally)
+DF = mpg[, c("cty", "hwy", "displ")]
+ggpairs(DF)
+```
+
+## Contour Plots 
+- graph a 2d function f(x, y) for different output values 
+- create a df with columns for the x, y, and z values where the x and y columns are all possible combinations of the two coords over a certain grid. 
+
+```{r plot}
+x_grid = seq(-1, 1, length.out = 100)
+y_grid = x_grid
+# create a dataframe containing all possible combinations of x,y
+R = expand.grid(x_grid, y_grid)
+# number of rows is 100 x 100 - one for each combination
+dim(R)
+## [1] 10000 2
+# modify column names for clear axes labeling
+names(R) = c('x', 'y')
+R$z = R$x^2 + R$y^2
+head(R)
+## x y z
+## 1 -1.0000000 -1 2.000000
+## 2 -0.9797980 -1 1.960004
+## 3 -0.9595960 -1 1.920824
+## 4 -0.9393939 -1 1.882461
+## 5 -0.9191919 -1 1.844914
+## 6 -0.8989899 -1 1.808183
+ggplot(R, aes(x = x,y = y, z = z)) + stat_contour()
+```
+
+
+## Quantiles and Box Plots 
+- 
+
