@@ -165,5 +165,125 @@ ggplot(R, aes(x = x,y = y, z = z)) + stat_contour()
 
 
 ## Quantiles and Box Plots 
-- 
+- The r-percentile of a numeric dataset is the point at which approximately r percent of the data lie underneath, and approximately 100r percent lie above1.
+- AKA the 0.r quantile.
+
+```{r}
+# display 0 through 100 percentiles at 0.1 increments
+# for the dataset containing 1,2,3,4.
+quantile(c(1, 2, 3, 4), seq(0, 1, length.out = 11))
+## 0% 10% 20% 30% 40% 50% 60% 70% 80%
+## 1.0 1.3 1.6 1.9 2.2 2.5 2.8 3.1 3.4
+## 90% 100%
+## 3.7 4.0
+```
+
+- median or 50 percentile (2nd quartile): half the data lies underneath and half above 
+- 25 percentile (1st quartile): above 25% of the data 
+- 75 percentile (3rd quartile): above 75% of the data
+- inter-quartile range (IQR): interval between the first and third quartiles
+  - covers the central 50% of the data 
+
+- The + operator below adds the box plot geometry, flips the x, y coordinates, and removes the y-axis label.
+
+```{r mtcars}
+ggplot(mpg, aes("",hwy)) +
+geom_boxplot() +
+coord_flip() +
+scale_x_discrete("")
+```
+- plotting box plots side by side: 
+- uses `coord_flip()` to flip the plots horizontally 
+- reorders the factors of the class variable to sort the box plots in order of increasing highway mpg medians 
+
+```{r mtcars}
+ggplot(mpg, aes(reorder(class, -hwy, median), hwy)) +
+geom_boxplot() +
+coord_flip() +
+scale_x_discrete("class")
+```
+
+## qq-Plots 
+- quantile-quantile plots 
+- good for comparing two datasets 
+- essentially scatter plots of quantiles of datasets 
+- (look to p337 for what plot shapes imply)
+
+Example: histograms for three datasets sampled from three bell-shaped
+Gaussian distributions N(0, 1), N(0, 1), and N(0, 2)
+
+```{r}
+D = data.frame(samples = c(rnorm(200, 1, 1),
+rnorm(200, 0, 1),
+rnorm(200, 0, 2)))
+D$parameter[1:200] = 'N(1,1)';
+D$parameter[201:400] = 'N(0,1)';
+D$parameter[401:600] = 'N(0,2)';
+qplot(samples,
+facets = parameter~.,
+geom = 'histogram',
+data = D)
+```
+
+- and now the qq-plots of the datasets (y axis) vs. a sample
+drawn from the N(0, 1) distribution (x axis).
+
+```{r}
+D = data.frame(samples = c(rnorm(200, 1, 1),
+rnorm(200, 0, 1),
+rnorm(200, 0, 2)));
+D$parameter[1:200] = 'N(1,1)';
+D$parameter[201:400] = 'N(0,1)';
+D$parameter[401:600] = 'N(0,2)';
+ggplot(D, aes(sample = samples)) +
+stat_qq() +
+facet_grid(.~parameter)
+```
+
+
+## Data Preparation
+
+1. create a df with data and informatively named columns 
+2. create a plot with `plot`, `qplot`, or `ggplot`
+
+creating a df: `R = data.frame(name = vec1, ages = vec2, salary = vec3)`
+changing column names: `names(R) = c("last.name", "age", "annual.income")`
+`rbind` and `cbind` add additional rows or columns to a df 
+
+creating a df example
+```{r}
+A = list(a = c(1, 2), b = c(3, 4), c = c(5, 6))
+stack(A)
+```
+
+graphing the df:
+```{r}
+x_grid = seq(-8, 8, length.out = 100)
+gaussian_function = function(x, s) exp(-x^2/(2*s^2))/(sqrt(2*pi)*s)
+R = stack(list('sigma=1' = gaussian_function(x_grid, 1),
+'sigma=2' = gaussian_function(x_grid, 2),
+'sigma=3' = gaussian_function(x_grid, 3),
+'sigma=4' = gaussian_function(x_grid, 4)))
+names(R) = c("y", "sigma");
+R$x = x_grid
+head(R)
+## y sigma x
+## 1 5.052271e-15 sigma=1 -8.000000
+## 2 1.816883e-14 sigma=1 -7.838384
+## 3 6.365366e-14 sigma=1 -7.676768
+## 4 2.172582e-13 sigma=1 -7.515152
+## 5 7.224128e-13 sigma=1 -7.353535
+## 6 2.340189e-12 sigma=1 -7.191919
+qplot(x,
+y,
+color = sigma,
+lty = sigma,
+geom = "line",
+data = R,
+main = "Normal density for different sigma values",
+xlab = "$x$",
+ylab = "$f(x)$")
+```
+
+
 
