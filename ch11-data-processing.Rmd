@@ -1,0 +1,19 @@
+---
+title: "ch11-data-processing"
+author: "jenngeorgevich"
+date: "9/19/2017"
+output: html_document
+---
+## Data Processing 
+
+## Missing Data 
+MCAR: missing completely at random 
+  - the prob of an observation mission does not depend on observed or unobserved measurements
+MAR: missing at random
+  - given the observed data, the prob that data is missing does not depend on the unobserved data
+  
+Some ways to deal with missing data:
+- remove rows containing missing data
+- replace missing entries with a substitute variable
+- estimate a probability model for the missing variable and replace the missing values with samples from the probability model 
+
