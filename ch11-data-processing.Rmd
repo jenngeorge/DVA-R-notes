@@ -17,3 +17,56 @@ Some ways to deal with missing data:
 - replace missing entries with a substitute variable
 - estimate a probability model for the missing variable and replace the missing values with samples from the probability model 
 
+## Outliers 
+two views:
+- corrupted values (human error)
+- non-corrupt, but substantially unlikely values 
+
+Robustness: data analysis procedures not sensitive to outliers
+  -non-robust ex: computing the mean of n numbers 
+  -robust: median of n numbers 
+  
+Techniques for dealing with outliers:
+- Truncating: removing all outliers 
+- Winsorization: Shrink outliers to the edge of the main data. 
+  - example: replace outliers with the most extreme of accepted values
+- Robustness: use a robust procedure to analyze the data 
+
+How to determine outliers:
+- below the alpha percentile or above the 100 - alpha percentile for some small alpha > 0 
+- if we assume a symmetric distribution, this ^ corresponds to being more than c std deviations away from the mean. 
+- compute the std deviation or percentiles after removing the most extreme values to avoid corrupting them with the outliers 
+
+Example removing outliers
+```{r}
+# sample values from Gaussian distribution 
+original_data = rnorm(20)
+# create an outlier 
+original_data[1] = 1000
+# sort the data and exclude lowest and highest values 
+filtered_data = original_data[3:18]
+# find limits using std devs 
+lower_limit = mean(filtered_data) - 5 * sd(filtered_data)
+upper_limit = mean(filtered_data) + 5 * sd(filtered_data)
+# exclude values 
+not_outlier_ind = (lower_limit < original_data) &
+(original_data < upper_limit)
+```
+
+Example windsorizing data using `windsorize` from `robustHD`
+
+```{r}
+library(robustHD)
+original_data = c(1000, rnorm(10))
+print(original_data)
+## [1] 1000.0000000 -0.2925366 1.8952183
+## [4] 0.2895131 0.2843515 -0.5394700
+## [7] -0.2802351 -0.8678683 0.1259644
+## [10] 0.6260071 -0.3043207
+print(winsorize(original_data))
+## [1] 1.4018458 -0.2925366 1.4018458
+## [4] 0.2895131 0.2843515 -0.5394700
+## [7] -0.2802351 -0.8678683 0.1259644
+## [10] 0.6260071 -0.3043207
+```
+
