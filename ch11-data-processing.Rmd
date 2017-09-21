@@ -70,3 +70,97 @@ print(winsorize(original_data))
 ## [10] 0.6260071 -0.3043207
 ```
 
+## Data Transformations 
+
+### Skewness and Power Transformation
+- sometimes data comes from a highly-skewed distribution
+- it cant be described well by a common stat distribution 
+- so use a transformation to map the data to a form that is well described by common distributions 
+
+Power Transformations: transformations for non-negative values 
+-see page 361 for equation
+  - for lambda in the set of Real numbers 
+  - fvlambda(x) = (x^lambda)/ lambda for lambda > 0 
+  - fvlambda(x) = logx for lambda = 0, x> 0, lambda in set of Real numbers
+  - fvlambda(x) = -(x^lambda -1)/ lambda for lambda < 0 
+- it maps x to x^lambda 
+- choose different lambda values to remove left or right skewness:
+  - remove left skew: lambda > 1 
+  - remove right skew: lambda < 1 
+  - select by trying different values and looking at the resulting histograms, or by using the maximum likelihood method 
+  
+Diamonds Example: 
+
+```{r}
+diamondsSubset = diamonds[sample(dim(diamonds)[1], 1000),]
+qplot(price, data = diamondsSubset)
+```
+transformed histogram: addresses the right skew 
+
+```{r}
+qplot(log(price), size = I(1), data = diamondsSubset)
+```
+
+transforming data shows a linear relationship on a log-log scale whereas the untransformed data didn't look like much. 
+
+```{r}
+qplot(carat,
+price,
+size = I(1),
+data = diamondsSubset)
+
+#transform!
+qplot(carat,
+log(price),
+size = I(1),
+data = diamondsSubset)
+
+qplot(log(carat),
+price,
+size = I(1),
+data = diamondsSubset)
+
+qplot(log(carat),
+log(price),
+size = I(1),
+data = diamondsSubset)
+```
+
+displaying the original variables on logarithmix axes for more readbility 
+```{r}
+qplot(carat,
+price,
+log = "xy",
+size = I(1),
+data = diamondsSubset)
+```
+
+Animals example 
+```{r}
+library(MASS)
+#hard to see anything of interest 
+qplot(brain, body, data = Animals)
+#transform!
+qplot(brain, body, log = "xy", data = Animals)
+# transforming reveals some outliers 
+```
+
+
+### Binning 
+- Binning (AKA discretization): divide a numeric variable's range into bins and replacing the variable with a number representing the corresponding bin 
+  - like rounding 
+- Binarization: a type of binning
+  - replace variables with 0 or 1 
+
+### Indicator Variables 
+- "a technique that replaces a variable x (numeric, ordinal, or categorical) taking k values with a binary k-dimensional vector v, such that v[i] (or vi in mathematical notation) is one if and only if x takes on the i-value in its range. Thus, the variable is replaced by a vector that is all zeros, except
+for one component that equals one corresponding to the variable value."
+- sometimes used with binning: make k bins, then create a k dimensional indicator variable 
+-useful for:
+  - ordinal or categorical data 
+  - capturing non-linear relationships by training a linear model on the result of: transforming data that doesn't follow a common distribution, binning it, and creating indicator vectors for the binned values
+  - better scalability: easier to compute  because indicator variables are binary 
+
+
+  
+
