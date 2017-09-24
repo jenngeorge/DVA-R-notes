@@ -161,6 +161,111 @@ for one component that equals one corresponding to the variable value."
   - capturing non-linear relationships by training a linear model on the result of: transforming data that doesn't follow a common distribution, binning it, and creating indicator vectors for the binned values
   - better scalability: easier to compute  because indicator variables are binary 
 
+## Data Manipulation 
 
+### Random Sampling, Partitioning, and Shuffling
+- random sampling without replacement: on each selection, exclude selected rows from the group being sampled 
+- random sampling with replacement: do not remove selected rows from the group being sampled from (may select the same row multiple times)
+
+```{r}
+D = array(data = seq(1, 20, length.out = 20), dim = c(4, 5))
+print(D)
+#get a sample of rows
+sampled_row_indices = sample(1:4, 3, replace=FALSE)
+# make a new array or df of the sampled rows 
+D_sampled = D[sampled_row_indices,]
+print(D_sampled)
+
+```
+
+random permutation of k objects: `sample(k, k)`
+
+### Concatenations and Joins 
+sometimes you need to make a single data frame out of multiple sources 
+(book shows how to do this in python)
+
+from http://www.statmethods.net/management/merging.html:
+  - merge 2 data frames by ID: `total <- merge(data frameA,data frameB,by="ID")`
+  - merge two data frames by ID and Country: `total <- merge(data frameA,data frameB,by=c("ID","Country"))`
+  - add rows to a dataframe if the 2 data frames have the same column names:
+  `total <- rbind(data frameA, data frameB)`
+
+### Tall Data and Wide Data 
+- tall format: array or df contains one or more columns that is a unique identifier and an additional column represents value 
+  - may have many rows but few columns
+
+example: 
+2015/01/01 apples 200
+2015/01/01 oranges 150
+2015/01/02 apples 220
+2015/01/02 oranges 130
+
+- wide format: may represent info with multiple columns rather than multiple rows 
+  - usually simpler to analuze 
+
+example: 
+
+Date apples oranges
+--------------------------
+2015/01/01 200 150
+2015/01/02 220 130
+
+### Reshaping Data 
+- can use the reshape2 package in R 
+
+example making a wide df tall
+```{r}
+library(reshape2)
+head(smiths)
+melt(smiths, id = c(1, 2))
+```
+
+- use `acast` (for arrays) or `dcast` (for dfs) to do the inverse of melt 
+```{r}
+head(tips)
+tipsm = melt(tips,
+id = c("sex","smoker","day","time","size"))
+head(tipsm)
+# mean is the aggregating function 
+dcast(tipsm,
+sex~variable,
+fun.aggregate = mean)
+```
+
+
+### The Split-Apply-Combine Framework 
+Process:
+  - split the df to form smaller arrays or dfs 
+  - apply some operation to each of the other smaller arrays or dfs 
+  - combine the results into a single meaningful array or df 
   
+- plyr R package (see p 384 for chart )
 
+example 
+```{r}
+library(plyr)
+head(baseball)
+# count number of players recorded for each year
+bbPerYear = ddply(baseball, "year", "nrow")
+head(bbPerYear)
+qplot(x = year,
+y = nrow,
+data = bbPerYear,
+geom = "line",
+ylab="number of player seasons")
+```
+
+example 2
+```{r}
+bbMod=ddply(baseball,
+"year",
+summarise,
+mean.rbi = mean(rbi, na.rm = TRUE))
+head(bbMod)
+qplot(x = year,
+y = mean.rbi,
+data = bbMod,
+geom = "line",
+ylab = "mean RBI")
+```
+more examples in book
